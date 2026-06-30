@@ -5,6 +5,41 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-07-01 — Phase 4 (in progress): Pretraining — loop PROVEN, GPU run handed off
+
+**The never-run training loop now runs end-to-end.**
+
+- Added `scripts/prepare_tokens.py`: tokenizes the corpus into flat uint16 memmap
+  bins (nanoGPT style — low RAM vs the book's per-chunk tensors). **Real token counts
+  (32k tokenizer):** train.bin **173,854,839**, val.bin 1,779,443, test.bin 1,773,489
+  → **~177.4M tokens** (matches the 1.56 word estimate almost exactly).
+- Rewrote `scripts/train.py` for real pretraining: memmap random-batch sampling,
+  AdamW (no decay on biases/norms), linear warmup → cosine decay, grad clipping,
+  mixed precision (CUDA), val-loss→perplexity, best-checkpoint + `--resume`, tqdm,
+  periodic sampling, `--model tiny|small`, argparse. Reads `data/processed/*.bin`.
+- Installed PyTorch 2.12.1+cpu locally (no GPU on this machine).
+- **CPU smoke test** (RWANDA_TINY, 150 steps, 1.46M-token slice):
+  val_loss **10.50 → 7.64**, ppl **36,466 → 2,087**, falling steadily; sample already
+  emits real Kinyarwanda (`mu Rwanda`, `mu gihe`, `uyu`, `ku`, `ko`). Loop confirmed.
+- **Kaggle handoff** (`kaggle/README.md` + `kaggle/kaggle_train.py`): no local GPU →
+  real RWANDA_SMALL run goes on free Kaggle GPU. User uploads the bins as a Kaggle
+  Dataset, opens a GPU notebook, runs the script (clones repo, trains, saves best ckpt).
+
+**Status:** Phase 4 step 1 (prove loss drops + Kinyarwanda-like samples) **MET** on CPU.
+Remaining: the real GPU pretraining run on Kaggle (RWANDA_SMALL, watch val perplexity)
+→ produces the M2 base checkpoint. That run is the user's to launch.
+
+**Verified facts**
+- torch 2.12.1+cpu works here; `cuda=False`. AMP path is a no-op on CPU.
+- RWANDA_TINY is 35.3M params at 32k vocab (embeddings dominate at tiny size).
+- Data-limited regime: ~177M tokens vs Chinchilla-optimal ~2.5B for RWANDA_SMALL
+  (124M) → train multiple epochs, save best by val ppl.
+
+**Next:** run `kaggle/kaggle_train.py` on Kaggle GPU → M2 checkpoint → Phase 5 eval
+(perplexity on test.bin, KINNEWS/MasakhaNER downstream, native-speaker review).
+
+---
+
 ## 2026-06-30 — Phase 3: Tokenizer scale-up — DONE (DoD met)
 
 Wrote `tokenizer/sweep_tokenizer.py`: trains byte-level BPE on the 178M-token
