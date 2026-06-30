@@ -5,6 +5,53 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-06-30 — Phase 2: Cleaning, dedup & split — DONE (DoD met)
+
+Built `data/clean_corpus.py`: combine all `data/sources/*/*.txt` → normalize →
+language-filter → dedup → shuffle → train/val/test. Outputs to `data/processed/`
+(gitignored, large).
+
+**Language-ID — key finding:** fastText `lid.176` (via fast-langdetect) **cannot
+detect Kinyarwanda** — on real rw it misfires to hr/id/sw/en at <0.3 confidence,
+while nailing en/fr at >0.85. So (per CLAUDE.md's sanctioned fallback) we use the
+**KINNEWS Kinyarwanda stopword list** (`data/lang_id/listed.txt`, 80 words) as a
+*negative* filter: drop a line only when it's confidently foreign (>=2 EN/FR function
+words AND 0 Kinyarwanda function words) + a non-Latin-script drop. On our (already
+~95% rw) sources this keeps ~99% and precisely removes the foreign minority.
+
+**Dedup:** collapse on a normalized key (casefold + letters/digits only + single
+spaces), 128-bit blake2b. Removes exact dups, trivial variants, and cross-source
+overlap (mbaza re-includes Wikipedia/news that MADLAD also crawled). Normalized-exact;
+semantic/MinHash near-dedup noted as a future refinement.
+
+**Results (`SEED=123`, split 98/1/1):**
+| | lines | words | ~tokens | size |
+|---|---|---|---|---|
+| raw (3 sources) | 6,540,855 | 123,896,175 | — | — |
+| after filter+dedup | 6,081,561 | 116,224,416 | ~181M | — |
+| **train.txt** | 5,959,931 | 113,897,871 | **~177.7M** | 837 MB |
+| val.txt | 60,815 | 1,165,183 | ~1.8M | 9 MB |
+| test.txt | 60,815 | 1,161,362 | ~1.8M | 9 MB |
+
+Removed 459,294 lines (7.0%: foreign/junk/duplicate). **Leakage check: val∩test = 0**;
+train disjoint by construction (dedup precedes split). No train/test contamination.
+
+**Phase 2 DoD** (one clean, deduped, shuffled corpus + documented token count +
+train/val/test split): **MET.**
+
+**Notes / decisions**
+- Outputs go to `data/processed/` (gitignored), NOT `data/kinyarwanda_corpus.txt` —
+  the "never commit large data" guardrail outranks the manual's example filename. The
+  small demo `data/kinyarwanda_corpus.txt` stays as-is.
+- `clean_corpus.py` reconfigures stdout to UTF-8 (Windows cp1252 consoles choke on
+  non-ASCII otherwise).
+- Token counts are word×1.56 estimates; real counts come after the Phase 3 retokenize.
+
+**Next — Phase 3 (tokenizer scale-up):** retrain BPE on `data/processed/train.txt`
+at vocab 16k/32k/50k, pick by fertility on `val.txt`, update `VOCAB_SIZE`.
+
+---
+
 ## 2026-06-30 — Phase 1: Data maximization — ≈193M tokens across 3 sources
 
 Decision (user): "maximize data first" before training. Executed:

@@ -19,6 +19,18 @@ URLs or license terms.
 
 ---
 
+## Tooling resources (not training text)
+
+### KINNEWS Kinyarwanda stopword list (used for language-ID in Phase 2)
+- **URL:** https://github.com/Andrews2017/KINNEWS-and-KIRNEWS-Corpus
+  file: `stopwords/Kinyarwanda/listed.txt` (verified 2026-06-30)
+- **Use:** 80 high-frequency Kinyarwanda function words → drives the negative
+  language filter in `data/clean_corpus.py`. Stored at `data/lang_id/listed.txt`
+  (committed; tiny). Cite Niyongabo Rubungo et al., *KINNEWS and KIRNEWS* (COLING 2020).
+- **Why not fastText lid.176:** tested — it cannot detect Kinyarwanda (misfires to
+  hr/id/sw/en at <0.3 confidence on real rw text, while detecting en/fr at >0.85).
+  So we use the KINNEWS stopwords as the manual's sanctioned heuristic instead.
+
 ## Sources logged
 
 ### Mbaza NLP — Kinyarwanda monolingual (v01.0)

@@ -6,6 +6,9 @@
 data/sources/*
 !data/sources/SOURCES.md
 
+# Phase 2 cleaned/split corpus (large — train/val/test live here).
+data/processed/
+
 # Model checkpoints / weights
 checkpoints/
 *.pt
