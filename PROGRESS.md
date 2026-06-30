@@ -5,6 +5,39 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-06-30 — Phase 1 (in progress): Data acquisition — source 1/N
+
+**Done — Kinyarwanda Wikipedia ingested**
+- Verified (fetched real pages, CLAUDE.md §10):
+  - Dump index `https://dumps.wikimedia.org/rwwiki/` → latest **20260601**;
+    file `rwwiki-20260601-pages-articles.xml.bz2` (12.2 MB compressed).
+  - License **CC BY-SA 4.0 + GFDL**, commercial OK **with attribution**
+    (https://dumps.wikimedia.org/legal.html).
+- Wrote `data/prepare_wikipedia.py` (deps: `mwparserfromhell==0.7.2`, stdlib
+  bz2/xml/urllib). Streams the bz2 XML, keeps article namespace, skips redirects,
+  strips wiki markup, emits one clean sentence per line, exact-line dedup.
+- Ran it on the full dump:
+  **12,006 articles → 149,845 unique sentences, ~2.23M words, ≈3.47M tokens, 16.0 MB.**
+  (~38× the demo corpus's 92k tokens.) Output: `data/sources/wikipedia/wikipedia_rw.txt`.
+- Logged full provenance in `data/sources/SOURCES.md`.
+- Added `mwparserfromhell>=0.6` to `requirements.txt`.
+
+**Verified facts**
+- Wikimedia dumps return HTTP 403 without a descriptive User-Agent — script sets one.
+- File is valid UTF-8 with n'/by' elisions preserved; `�` in the Windows console is
+  a display artifact only.
+
+**Phase 1 status:** NOT done yet. Wikipedia is source 1. Phase 1 DoD wants several
+hundred MB; need more sources next.
+
+**Next (Phase 1, continue):**
+- MasakhaNEWS (Kinyarwanda) via Hugging Face `datasets` — verify license, write
+  `data/prepare_masakhanews.py`.
+- Then KINNEWS/KIRNEWS, then OSCAR rw / CC-100 rw (large, noisy), Kinyarwanda Bible.
+- Heavy cleaning + lang-ID + near-dedup across all sources is **Phase 2**, not now.
+
+---
+
 ## 2026-06-30 — Phase 0: Verify & set up
 
 **Done**

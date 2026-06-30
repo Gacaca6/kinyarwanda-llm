@@ -10,6 +10,9 @@ tokenizers==0.23.1
 # official selector at https://pytorch.org ; floor only until env is frozen.
 torch>=2.2
 
+# Wikitext parsing for the Kinyarwanda Wikipedia reader (data/prepare_wikipedia.py).
+mwparserfromhell>=0.6
+
 # Numerics, progress bars, dataset access, regex pretokenization.
 numpy>=1.26
 tqdm>=4.66
