@@ -1,7 +1,9 @@
 # CLAUDE.md §6: never commit large data or model weights.
 
 # Raw downloaded corpora (one dir per source). Keep readers + SOURCES.md, not data.
-data/sources/
+# NB: ignore the directory *contents* (data/sources/*), not the directory itself —
+# git cannot re-include a file whose parent directory is excluded.
+data/sources/*
 !data/sources/SOURCES.md
 
 # Model checkpoints / weights
