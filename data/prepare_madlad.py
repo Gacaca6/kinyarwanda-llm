@@ -33,8 +33,9 @@ import sys
 import urllib.request
 
 REPO = "allenai/MADLAD-400"
-SHARD = "data/rw/rw_clean_0000.jsonl.gz"
-URL = f"https://huggingface.co/datasets/{REPO}/resolve/main/{SHARD}"
+# rw shards: data/rw/rw_clean_0000.jsonl.gz (278 MB), rw_noisy_0000.jsonl.gz (737 MB)
+SHARD_TMPL = "data/rw/rw_{split}_0000.jsonl.gz"
+RESOLVE = f"https://huggingface.co/datasets/{REPO}/resolve/main/"
 UA = "kinyarwanda-llm/0.1 (open Kinyarwanda LLM corpus build; contact via GitHub)"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -92,7 +93,7 @@ def download(url, dest):
         print(f"  using cached shard: {dest} ({os.path.getsize(dest)/1e6:.0f} MB)")
         return
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-    print(f"  downloading {url}\n  (277 MB — this takes a few minutes)")
+    print(f"  downloading {url}\n  (large file — this takes a few minutes)")
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     tmp = dest + ".part"
     with urllib.request.urlopen(req) as r, open(tmp, "wb") as w:
@@ -111,16 +112,19 @@ def download(url, dest):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--split", choices=["clean", "noisy"], default="clean")
     ap.add_argument("--max-docs", type=int, default=0, help="0 = all")
-    ap.add_argument("--max-out-mb", type=int, default=500,
+    ap.add_argument("--max-out-mb", type=int, default=0,
                     help="stop after this many MB written (0 = unlimited)")
     ap.add_argument("--min-chars", type=int, default=12)
     args = ap.parse_args()
 
-    shard = os.path.join(RAW_DIR, os.path.basename(SHARD))
-    out = os.path.join(OUT_DIR, "madlad_rw_clean.txt")
+    shard_rel = SHARD_TMPL.format(split=args.split)
+    url = RESOLVE + shard_rel
+    shard = os.path.join(RAW_DIR, os.path.basename(shard_rel))
+    out = os.path.join(OUT_DIR, f"madlad_rw_{args.split}.txt")
     os.makedirs(OUT_DIR, exist_ok=True)
-    download(URL, shard)
+    download(url, shard)
 
     cap = args.max_out_mb * 1_000_000
     seen, n_sent, n_docs, n_bytes = set(), 0, 0, 0

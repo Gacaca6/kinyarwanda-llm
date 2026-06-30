@@ -5,6 +5,41 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-06-30 — Phase 1: Data maximization — ≈193M tokens across 3 sources
+
+Decision (user): "maximize data first" before training. Executed:
+
+- **Uncapped MADLAD clean** (`--max-out-mb 0`): 226,466 docs → 5,424,400 sentences →
+  ~156M tokens / 740 MB (was 500 MB capped). Generalized `prepare_madlad.py` with
+  `--split {clean,noisy}`.
+- **Added mbaza NLP v01.0** (`data/prepare_mbaza.py`, pyarrow): 78,733 docs →
+  966,610 sentences → ~34M tokens / 159 MB. CC BY 4.0. (v01.1 gated → used open v01.0.)
+- **Ruled out (verified, flagged not faked):**
+  - MasakhaNEWS — no Kinyarwanda config (has Rundi, not kin) + CC-BY-**NC**.
+  - mbaza v01.1 — gated (HF login).
+  - Kinyarwanda Bible — not in public-domain BibleNLP/ebible (1,080 translations, 0 kin);
+    Bibiliya Yera is © Bible Society of Rwanda. No clean bulk download found.
+
+**Corpus now (raw, pre-Phase-2):**
+| Source | sentences | ~tokens | size |
+|---|---|---|---|
+| Wikipedia rw | 149,845 | ~3.5M | 16 MB |
+| MADLAD-400 rw clean (full) | 5,424,400 | ~156M | 740 MB |
+| mbaza rw v01.0 | 966,610 | ~34M | 159 MB |
+| **Total** | **6,540,855** | **~193M** | **~916 MB** |
+
+**Caveat:** heavy cross-source overlap (mbaza contains Wikipedia + news; MADLAD crawl
+includes news sites). Unique tokens after Phase 2 near-dedup will be materially lower.
+
+**Remaining volume lever (not done):** MADLAD **noisy** split (`--split noisy`, 737 MB
+compressed, ~3 GB text). Held back: low quality + in-reader hash-dedup set would need
+several GB RAM at that line count. Better after Phase 2 has scalable (MinHash) dedup.
+
+**Next:** Phase 2 — language-ID filter (drop non-rw), normalize, cross-source
+near-dedup, then shuffled train/val/test split with documented token counts.
+
+---
+
 ## 2026-06-30 — Phase 1: Data acquisition — DoD MET (≈516 MB across 2 sources)
 
 **Done — MADLAD-400 rw (clean split) ingested (the "volume" source)**

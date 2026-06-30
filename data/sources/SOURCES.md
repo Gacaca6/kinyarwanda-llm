@@ -21,6 +21,26 @@ URLs or license terms.
 
 ## Sources logged
 
+### Mbaza NLP — Kinyarwanda monolingual (v01.0)
+- **URL:** https://huggingface.co/datasets/mbazaNLP/kinyarwanda_monolingual_v01.0
+  shard: .../resolve/main/data/train-00000-of-00001.parquet (verified 2026-06-30)
+- **License:** **CC BY 4.0** — commercial OK **with attribution**. Mbaza NLP
+  Community (2024).
+- **Date downloaded:** 2026-06-30
+- **Raw size:** ~191 MB parquet, column `text`; 78,733 documents.
+- **Local path:** `data/sources/mbaza/raw/train-00000-of-00001.parquet` (gitignored)
+  → `data/sources/mbaza/mbaza_rw.txt` (cleaned)
+- **Reader script:** `data/prepare_mbaza.py` (pyarrow batched read of `text`)
+- **Cleaning applied:** same pipeline as MADLAD (unescape → sentence-split → boilerplate
+  filter → hash-dedup → one sentence/line, UTF-8, elisions preserved).
+- **Output:** **78,733 docs → 966,610 unique sentences, ~21.6M words, ≈34M tokens, 159 MB.**
+- **Notes:** Used **v01.0** because the maintainer-recommended **v01.1 is gated**
+  (HF login required). v01.0 has known duplicates + a few non-rw docs — handled by
+  hash-dedup here and Phase 2 language-ID/near-dedup. **Overlap warning:** mbaza
+  aggregates news (Kigali Today, Igihe), religious/cultural sites, **Wikipedia**, and
+  govt/legal PDFs — so it overlaps our Wikipedia + the MADLAD web crawl. Cross-source
+  near-dedup in Phase 2 is essential; raw token counts overstate unique content.
+
 ### MADLAD-400 — Kinyarwanda (rw), clean split
 - **URL:** https://huggingface.co/datasets/allenai/MADLAD-400
   shard: https://huggingface.co/datasets/allenai/MADLAD-400/resolve/main/data/rw/rw_clean_0000.jsonl.gz
@@ -39,9 +59,10 @@ URLs or license terms.
   sentence-split → drop web boilerplate (pipe/©/URL lines, markup starts,
   low-letter-ratio, <12 chars) → **hash-based exact-line dedup** → one sentence per
   line, UTF-8, n'/by' elisions preserved.
-- **Output (capped at 500 MB):** **153,171 docs → 3,697,960 unique sentences,
-  ~68.2M words, ≈106M tokens, 500.0 MB.** Cap is configurable: re-run with
-  `--max-out-mb 0` to process the full ~1 GB.
+- **Output (full clean split, uncapped):** **226,466 docs → 5,424,400 unique
+  sentences, ≈155M tokens, 734.5 MB.** (`--max-out-mb 0`, `--split clean`.)
+  The **noisy** split (`--split noisy`, 737 MB compressed, ~3 GB text) is available
+  for even more volume but is much lower quality — defer to after Phase 2 dedup.
 - **Notes:** Chosen as the "volume" web-crawl source after OSCAR (gated/suspended on
   HF) and CC-100 (no Kinyarwanda split — confirmed 404) both proved unusable. Bypasses
   HF `datasets` (v5 dropped loading-script support; MADLAD ships a script). Still
