@@ -1,0 +1,33 @@
+# CLAUDE.md §6: never commit large data or model weights.
+
+# Raw downloaded corpora (one dir per source). Keep readers + SOURCES.md, not data.
+data/sources/
+!data/sources/SOURCES.md
+
+# Model checkpoints / weights
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Training artifacts
+*.log
+loss_curve*.png
+runs/
+wandb/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

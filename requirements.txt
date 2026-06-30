@@ -1,0 +1,17 @@
+# Kinyarwanda LLM — Python dependencies
+# Pin versions for reproducibility (CLAUDE.md §5).
+# Verified-installed pins are exact; others are minimum-version floors until the
+# training environment is built, then run `pip freeze` and replace with exact ==.
+
+# Tokenizer training + inference (byte-level BPE). Verified installed: 0.23.1
+tokenizers==0.23.1
+
+# Model + training (Phase 4). Heavy / platform-specific wheel — install per the
+# official selector at https://pytorch.org ; floor only until env is frozen.
+torch>=2.2
+
+# Numerics, progress bars, dataset access, regex pretokenization.
+numpy>=1.26
+tqdm>=4.66
+datasets>=2.18
+regex>=2024.4
