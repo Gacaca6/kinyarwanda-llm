@@ -13,6 +13,10 @@ torch>=2.2
 # Wikitext parsing for the Kinyarwanda Wikipedia reader (data/prepare_wikipedia.py).
 mwparserfromhell>=0.6
 
+# GPT-2 baseline for the tokenizer fertility comparison (tokenizer/compare_tokenizers.py,
+# tokenizer/sweep_tokenizer.py). Cross-platform replacement for the book's offline encoder.
+tiktoken>=0.7
+
 # Hugging Face Hub access. NB: the MADLAD-400 reader (data/prepare_madlad.py)
 # pulls the raw .jsonl.gz shard directly via huggingface_hub / plain URL, because
 # `datasets` >= 4 dropped loading-script support and MADLAD ships a script.

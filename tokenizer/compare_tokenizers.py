@@ -5,15 +5,25 @@ Measures how efficiently each tokenizer encodes Kinyarwanda text.
 Metric: "fertility" = tokens produced per whitespace word.
 Lower is better: fewer tokens per word means each token carries more meaning,
 the model sees longer effective context, and training/inference are cheaper.
-"""
-import sys
-import os
-from tokenizers import Tokenizer
 
-# Use the real GPT-2 BPE encoder bundled with the book repo (fully offline).
-_BOOK_BPE = "/home/claude/LLMs-from-scratch/ch02/02_bonus_bytepair-encoder"
-sys.path.insert(0, _BOOK_BPE)
-from bpe_openai_gpt2 import get_encoder  # noqa: E402
+Baseline is GPT-2's English BPE via `tiktoken` (cross-platform; replaces the book's
+bundled offline encoder, which lived at a Linux-only path). Evaluated on held-out
+Kinyarwanda (data/processed/val.txt) if present, else the demo corpus.
+"""
+import os
+import sys
+
+from tokenizers import Tokenizer
+import tiktoken
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")  # Windows cp1252 consoles
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+VAL = os.path.join(ROOT, "data", "processed", "val.txt")
+DEMO = os.path.join(ROOT, "data", "kinyarwanda_corpus.txt")
+KIN_TOK = os.path.join(HERE, "kinyarwanda_bpe", "tokenizer.json")
 
 
 def stats(name, encode_fn, lines):
@@ -22,28 +32,27 @@ def stats(name, encode_fn, lines):
         n_tokens += len(encode_fn(ln))
         n_words += len(ln.split())
         n_chars += len(ln)
-    print(f"{name:<28} tokens={n_tokens:>7}  "
+    print(f"{name:<30} tokens={n_tokens:>9,}  "
           f"tokens/word={n_tokens / n_words:5.2f}  "
           f"chars/token={n_chars / n_tokens:5.2f}")
     return n_tokens / n_words
 
 
 def main():
-    lines = [l.strip() for l in open(
-        "../data/kinyarwanda_corpus.txt", encoding="utf-8") if l.strip()]
+    path = VAL if os.path.exists(VAL) else DEMO
+    lines = [l.strip() for l in open(path, encoding="utf-8") if l.strip()]
 
-    gpt2 = get_encoder(model_name="gpt2_model", models_dir=_BOOK_BPE)
-    kin = Tokenizer.from_file("kinyarwanda_bpe/tokenizer.json")
+    gpt2 = tiktoken.get_encoding("gpt2")
+    kin = Tokenizer.from_file(KIN_TOK)
 
-    print(f"Evaluated on {len(lines)} Kinyarwanda sentences\n")
-    f_gpt2 = stats("GPT-2 (English BPE, book default)",
-                   lambda s: gpt2.encode(s), lines)
-    f_kin = stats("Kinyarwanda BPE (ours)",
+    print(f"Evaluated on {len(lines):,} Kinyarwanda sentences "
+          f"({os.path.relpath(path, ROOT)})\n")
+    f_gpt2 = stats("GPT-2 (English BPE, tiktoken)", lambda s: gpt2.encode(s), lines)
+    f_kin = stats(f"Kinyarwanda BPE (vocab {kin.get_vocab_size()})",
                   lambda s: kin.encode(s).ids, lines)
 
-    print(f"\n=> Kinyarwanda tokenizer is "
-          f"{f_gpt2 / f_kin:.2f}x more efficient on Kinyarwanda "
-          f"({(1 - f_kin / f_gpt2) * 100:.0f}% fewer tokens per word).")
+    print(f"\n=> Kinyarwanda tokenizer is {f_gpt2 / f_kin:.2f}x more efficient on "
+          f"Kinyarwanda ({(1 - f_kin / f_gpt2) * 100:.0f}% fewer tokens per word).")
 
     print("\nExample - agglutinative words split by each tokenizer:")
     samples = ["ntibazabikora", "turabashimira", "abanyarwanda",

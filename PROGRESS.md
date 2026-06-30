@@ -5,6 +5,43 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-06-30 — Phase 3: Tokenizer scale-up — DONE (DoD met)
+
+Wrote `tokenizer/sweep_tokenizer.py`: trains byte-level BPE on the 178M-token
+`train.txt` at vocab 16k/32k/50k, measures fertility on `val.txt`, writes
+`eval/tokenizer_sweep.md`. Baseline = GPT-2 via `tiktoken`.
+
+**Sweep (fertility = tokens/word on val.txt, lower better):**
+| vocab | fertility | chars/tok | vs GPT-2 |
+|---|---|---|---|
+| GPT-2 (50257) | 3.07 | 2.33 | 1.00x |
+| 16k | 1.59 | 4.49 | 1.93x |
+| **32k (chosen)** | **1.47** | **4.85** | **2.08x** |
+| 50k | 1.42 | 5.03 | 2.16x |
+
+**Decision: 32k.** Gains diminish (16k→32k −7.5%, 32k→50k only −3.4%) while embedding
++ head cost grows linearly (24.6M/49.2M/76.8M params at emb_dim 768). 50k would make
+embeddings ~half a RWANDA_SMALL model. At 178M tokens each 32k type is seen ~5,500x.
+
+**Done:** promoted 32k tokenizer → `tokenizer/kinyarwanda_bpe/`; set
+`VOCAB_SIZE=32000` in `model/config.py`; updated `validate_pipeline.py` CFG; **fixed
+`compare_tokenizers.py`** (was hardcoded to a Linux `/home/claude` path → now tiktoken,
+runs anywhere). Validator passes (round-trip OK; TINY now 35.3M params at 32k vocab).
+`ntibazabikora` → `['nti','baza','bikora']`; `abanyarwanda`/`umunyarwanda` → 1 token.
+
+**Phase 3 DoD** (final tokenizer with documented fertility; config updated): **MET.**
+Added `tiktoken` to requirements. Sweep intermediates gitignored (`tokenizer/sweep/`).
+
+**Milestone M1 (corpus + tokenizer) — essentially COMPLETE.**
+
+**Next — Phase 4 (pretraining):** first confirm RWANDA_TINY loss drops + samples look
+Kinyarwanda-like (CPU/GPU, a few hundred steps), then add LR warmup+cosine, grad
+clipping, mixed precision, checkpoint resume, tqdm; train on a free GPU; track val
+perplexity. Needs PyTorch (not yet installed). NB: `train.py` currently reads
+`data/kinyarwanda_corpus.txt` — point it at `data/processed/train.txt` + use `val.txt`.
+
+---
+
 ## 2026-06-30 — Phase 2: Cleaning, dedup & split — DONE (DoD met)
 
 Built `data/clean_corpus.py`: combine all `data/sources/*/*.txt` → normalize →

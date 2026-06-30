@@ -9,6 +9,10 @@ data/sources/*
 # Phase 2 cleaned/split corpus (large — train/val/test live here).
 data/processed/
 
+# Phase 3 tokenizer sweep intermediates (the chosen one is promoted to
+# tokenizer/kinyarwanda_bpe/, which IS tracked).
+tokenizer/sweep/
+
 # Model checkpoints / weights
 checkpoints/
 *.pt

@@ -9,7 +9,7 @@ from tokenizers import Tokenizer
 
 TOK = "tokenizer/kinyarwanda_bpe/tokenizer.json"
 CORPUS = "data/kinyarwanda_corpus.txt"
-CFG = {"vocab_size": 8000, "context_length": 256, "emb_dim": 384,
+CFG = {"vocab_size": 32000, "context_length": 256, "emb_dim": 384,
        "n_heads": 6, "n_layers": 6}
 
 

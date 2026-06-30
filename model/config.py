@@ -8,8 +8,10 @@ can actually pretrain on a single modest GPU once you have a few hundred MB+ of
 clean text.
 """
 
-# Must match the tokenizer's vocab_size (see tokenizer/train_tokenizer.py).
-VOCAB_SIZE = 8000
+# Must match the tokenizer's vocab_size. Phase 3 sweep (16k/32k/50k) on the
+# ~178M-token corpus picked 32k as the best fertility/size trade-off
+# (1.47 tokens/word, 2.08x vs GPT-2). See eval/tokenizer_sweep.md.
+VOCAB_SIZE = 32000
 
 # A small, trainable config to start with. Scale up as your corpus grows.
 RWANDA_TINY = {
