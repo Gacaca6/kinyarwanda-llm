@@ -5,7 +5,47 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
-## 2026-06-30 — Phase 1 (in progress): Data acquisition — source 1/N
+## 2026-06-30 — Phase 1: Data acquisition — DoD MET (≈516 MB across 2 sources)
+
+**Done — MADLAD-400 rw (clean split) ingested (the "volume" source)**
+- The chosen targets failed verification (CLAUDE.md §10, flagged not faked):
+  - **OSCAR** — gated + access suspended on HF. Unusable without manual approval.
+  - **CC-100** — has **no Kinyarwanda split** (rw.txt.xz 404s; confirmed absent from index).
+- Verified substitute: **MADLAD-400** (`allenai/MADLAD-400`) — ungated, **CC-BY-4.0**
+  (attribution), includes `rw`. Shard `data/rw/rw_clean_0000.jsonl.gz` = 277.7 MB
+  compressed (~1 GB text).
+- Wrote `data/prepare_madlad.py`. Pulls the raw .jsonl.gz shard directly via URL
+  (HF `datasets` v5 dropped loading-script support; MADLAD ships a script). Streams
+  json → unescapes literal `\n` → sentence-splits → drops web boilerplate →
+  hash-based exact dedup (bounded memory). Output cap default 500 MB (`--max-out-mb`).
+- Ran it (cap 500 MB):
+  **153,171 docs → 3,697,960 unique sentences, ~68.2M words, ≈106M tokens, 500.0 MB.**
+  Output: `data/sources/madlad/madlad_rw_clean.txt`.
+- Logged full provenance in `data/sources/SOURCES.md`. Added `huggingface_hub` to reqs.
+
+**Corpus so far (raw, pre-Phase-2):**
+| Source | sentences | ~tokens | size |
+|---|---|---|---|
+| Wikipedia rw | 149,845 | ≈3.47M | 16 MB |
+| MADLAD-400 rw clean (capped) | 3,697,960 | ≈106M | 500 MB |
+| **Total** | **3.85M** | **≈110M** | **≈516 MB** |
+
+**Phase 1 DoD** ("≥ several hundred MB, each source license-verified & logged"): **MET.**
+
+**Verified facts**
+- MADLAD encodes in-doc newlines as the literal 2-char `\n` — must unescape post-json.
+- `datasets` 5.0.0 refuses script-based datasets ("Dataset scripts are no longer
+  supported") — pull MADLAD shards by URL instead.
+- MADLAD clean is still web-noisy (site names, dates, some non-rw) → Phase 2 job.
+
+**Next options**
+- (a) Move to **Phase 2** (clean/dedup/lang-ID across both sources → train/val/test).
+- (b) Or add more Phase 1 sources first (mbazaNLP rw set, MasakhaNEWS, Bible) — more
+  data never hurts, but the DoD is already met so Phase 2 is the higher-value next step.
+
+---
+
+## 2026-06-30 — Phase 1 (started): Data acquisition — source 1
 
 **Done — Kinyarwanda Wikipedia ingested**
 - Verified (fetched real pages, CLAUDE.md §10):

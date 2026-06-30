@@ -13,6 +13,11 @@ torch>=2.2
 # Wikitext parsing for the Kinyarwanda Wikipedia reader (data/prepare_wikipedia.py).
 mwparserfromhell>=0.6
 
+# Hugging Face Hub access. NB: the MADLAD-400 reader (data/prepare_madlad.py)
+# pulls the raw .jsonl.gz shard directly via huggingface_hub / plain URL, because
+# `datasets` >= 4 dropped loading-script support and MADLAD ships a script.
+huggingface_hub>=0.23
+
 # Numerics, progress bars, dataset access, regex pretokenization.
 numpy>=1.26
 tqdm>=4.66
