@@ -5,7 +5,36 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
-## 2026-07-01 — Phase 4 (in progress): Pretraining — loop PROVEN, GPU run handed off
+## 2026-07-01 — Phase 4: Pretraining — COMPLETE (M2 reached) 🎉
+
+**RWANDA_SMALL base model trained end-to-end on Colab T4.**
+- 40,000 steps, batch 12, ctx 512, ~174M train tokens. ~2.75 epochs.
+- **Val perplexity: 37,819 → 54.5** (best val_loss 3.998). Clean monotonic decline;
+  plateaued ~54–56 over the last ~7k steps (data-limited signature: 174M tokens for a
+  124M-class model).
+- Trained across two Colab sessions (free GPU ~5h/session): resumed cleanly from the
+  Drive checkpoint via `--resume` + atomic saves. Second session used a different
+  Google account for fresh GPU quota, sharing the Drive folder (Editor) — worked.
+- Checkpoint: `MyDrive/kinyarwanda-llm/checkpoints/kinyarwanda_small.pt` (1.63 GB,
+  model+optimizer+step). 134.6M params.
+- **Sample (step 40k):** *"U Rwanda ruvuga ko kuva u Rwanda rwatangira kwakira imikino
+  ya nyuma ya CHAN, ibi byatumye ruhitamo kwakira Inama ihuza ibihugu, u Rwanda na
+  Kenya..."* — fluent, grammatical, topical Kinyarwanda; correct agglutinative
+  morphology + subject concords.
+
+**Phase 4 DoD** (base checkpoint, clearly improving val ppl, coherent Kinyarwanda):
+**MET.** **Milestone M2: reached.**
+
+**Honest note:** this is a solid **v0 base** (text-completion). It is at the ceiling of
+what this corpus gives this model size — further gains need more data, a bigger model,
+or instruction tuning (Phase 6), not more steps.
+
+**Next:** Phase 5 — evaluation (test-set perplexity, tokenizer fertility, a downstream
+task on KINNEWS/MasakhaNER, and native-speaker generation samples) → eval/RESULTS.md.
+
+---
+
+## 2026-07-01 — Phase 4 (step 1): Pretraining — loop PROVEN, GPU run handed off
 
 **The never-run training loop now runs end-to-end.**
 
