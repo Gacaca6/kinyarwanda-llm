@@ -21,9 +21,13 @@ every working session with: what was done, what worked, what's next.
 - **CPU smoke test** (RWANDA_TINY, 150 steps, 1.46M-token slice):
   val_loss **10.50 → 7.64**, ppl **36,466 → 2,087**, falling steadily; sample already
   emits real Kinyarwanda (`mu Rwanda`, `mu gihe`, `uyu`, `ku`, `ko`). Loop confirmed.
-- **Kaggle handoff** (`kaggle/README.md` + `kaggle/kaggle_train.py`): no local GPU →
-  real RWANDA_SMALL run goes on free Kaggle GPU. User uploads the bins as a Kaggle
-  Dataset, opens a GPU notebook, runs the script (clones repo, trains, saves best ckpt).
+- **GPU handoff** (no local GPU → real RWANDA_SMALL run on free cloud GPU):
+  - `kaggle/` — Kaggle notebook + guide. **Blocked for this user:** Kaggle requires
+    phone verification to unlock GPU and it wasn't working for them.
+  - `colab/` (**primary path now**) — Google Colab needs no phone/card. Mounts Google
+    Drive for the bins AND for persistent checkpoints (survives Colab's ~12h session
+    limit; re-run cell to `--resume`). Same `train.py`. See `colab/README.md`.
+  - Other phone-free fallbacks noted: SageMaker Studio Lab, Lightning AI, Paperspace.
 
 **Status:** Phase 4 step 1 (prove loss drops + Kinyarwanda-like samples) **MET** on CPU.
 Remaining: the real GPU pretraining run on Kaggle (RWANDA_SMALL, watch val perplexity)
