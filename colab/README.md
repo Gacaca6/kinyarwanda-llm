@@ -1,28 +1,14 @@
 # Training on a free Google Colab GPU (no phone verification)
 
 Kaggle needs phone verification to unlock its GPU; Colab does **not** (no phone, no
-card). The pipeline is identical — same `train.py`, same `.bin` files. Colab + Google
-Drive also gives you **persistent checkpoints**, which matters because this
-data-limited run needs several epochs across multiple sessions.
+card). Colab + Google Drive also gives **persistent checkpoints**, which matters
+because this data-limited run needs several epochs across multiple sessions.
 
-## One-time: build the bins and put them on Drive
+## The easy way — one cell, zero upload (recommended)
 
-```bash
-# locally, from the repo root:
-python -m scripts.prepare_tokens     # writes data/processed/{train,val,test}.bin
-```
-
-Then upload to Google Drive (drive.google.com), creating this folder:
-
-```
-MyDrive/kinyarwanda-llm/bins/train.bin   (~348 MB)
-MyDrive/kinyarwanda-llm/bins/val.bin
-MyDrive/kinyarwanda-llm/bins/test.bin
-```
-
-(train.bin is 348 MB; Drive's free 15 GB is plenty. Upload can take a while.)
-
-## Each training session
+You do **not** need to upload the 348 MB corpus. [`colab_bootstrap.py`](colab_bootstrap.py)
+rebuilds it from the public sources *inside Colab* (fast download there) the first
+time, caches the bins to your Drive, then trains. Later runs reuse the cached bins.
 
 1. Open **https://colab.research.google.com** → **New notebook**.
 2. **Runtime → Change runtime type → Hardware accelerator: T4 GPU → Save.**
@@ -31,10 +17,21 @@ MyDrive/kinyarwanda-llm/bins/test.bin
    from google.colab import drive
    drive.mount('/content/drive')
    ```
-4. **Cell 2 — train:** paste the contents of [`colab_train.py`](colab_train.py) and run.
-   It clones the repo, installs `tokenizers`, checks the GPU + bins, and trains
-   RWANDA_SMALL, saving the best checkpoint to
-   `MyDrive/kinyarwanda-llm/checkpoints/kinyarwanda_small.pt`.
+4. **Cell 2 — everything:** paste the contents of
+   [`colab_bootstrap.py`](colab_bootstrap.py) and run. First run: builds + caches the
+   corpus (~15–25 min) then trains. Later runs: straight to training. Best checkpoint
+   is saved to `MyDrive/kinyarwanda-llm/checkpoints/kinyarwanda_small.pt`.
+
+That's it — no manual data handling.
+
+## The other way — pre-upload the bins yourself
+
+If you'd rather build the bins locally and upload them (skips the in-Colab rebuild):
+```bash
+python -m scripts.prepare_tokens     # writes data/processed/{train,val,test}.bin
+```
+Upload them to `MyDrive/kinyarwanda-llm/bins/` on drive.google.com, then use
+[`colab_train.py`](colab_train.py) as Cell 2 instead of the bootstrap.
 
 ## Notes / knobs
 
