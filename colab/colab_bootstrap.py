@@ -36,8 +36,13 @@ def run(cmd):
     subprocess.run(cmd, check=True)
 
 
+# reduce CUDA fragmentation OOMs on the 16GB T4
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 # 1) code + deps ------------------------------------------------------------
-if not os.path.isdir("kinyarwanda-llm"):
+if os.path.isdir("kinyarwanda-llm"):
+    subprocess.run(["git", "-C", "kinyarwanda-llm", "pull", "--ff-only"])  # get fixes
+else:
     run(["git", "clone", "--depth", "1", REPO])
 os.chdir("kinyarwanda-llm")
 run([sys.executable, "-m", "pip", "install", "-q",
@@ -83,7 +88,7 @@ run([sys.executable, "-m", "scripts.train",
      "--train-bin", "data/processed/train.bin",
      "--val-bin", "data/processed/val.bin",
      "--steps", "40000",
-     "--batch-size", "24",
+     "--batch-size", "12",
      "--lr", "5e-4",
      "--warmup", "1000",
      "--eval-interval", "500",

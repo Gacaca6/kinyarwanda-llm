@@ -128,7 +128,10 @@ def main():
     n_params = sum(p.numel() for p in model.parameters())
     opt = make_optimizer(model, args.lr, TRAIN["weight_decay"])
     use_amp = device == "cuda"
-    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+    try:                                    # torch >= 2.4 (Colab)
+        scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    except (AttributeError, TypeError):     # older torch
+        scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 
     start_step, best_val = 0, float("inf")
     os.makedirs(args.out, exist_ok=True)
