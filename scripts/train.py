@@ -100,6 +100,9 @@ def main():
     ap.add_argument("--grad-clip", type=float, default=1.0)
     ap.add_argument("--eval-interval", type=int, default=200)
     ap.add_argument("--eval-iters", type=int, default=50)
+    ap.add_argument("--save-interval", type=int, default=2000,
+                    help="save checkpoint every N steps (atomic). Bigger = fewer "
+                         "slow Drive writes.")
     ap.add_argument("--out", default="checkpoints")
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--seed", type=int, default=123)
@@ -176,18 +179,21 @@ def main():
 
         if step % args.eval_interval == 0 or step == args.steps - 1:
             vl = loss_on(val_data, model, block, bs, device, args.eval_iters)
+            best_val = min(best_val, vl)
             ppl = math.exp(min(vl, 20))
             msg = f"step {step}  train_loss {loss.item():.3f}  val_loss {vl:.3f}  ppl {ppl:.1f}  lr {lr:.2e}"
-            if hasattr(bar, "write"):
-                bar.write(msg)
-            else:
-                print(msg)
-            if vl < best_val:
-                best_val = vl
-                torch.save({"model_state_dict": model.state_dict(),
-                            "opt_state_dict": opt.state_dict(),
-                            "config": cfg, "step": step, "best_val": best_val},
-                           ckpt_path)
+            (bar.write if hasattr(bar, "write") else print)(msg)
+
+        # Checkpoint on a coarser cadence (atomic write -> crash/disconnect safe,
+        # and far fewer slow 1.6GB Drive writes than saving every eval).
+        if step > start_step and (step % args.save_interval == 0 or step == args.steps - 1):
+            tmp = ckpt_path + ".tmp"
+            torch.save({"model_state_dict": model.state_dict(),
+                        "opt_state_dict": opt.state_dict(),
+                        "config": cfg, "step": step + 1, "best_val": best_val}, tmp)
+            os.replace(tmp, ckpt_path)   # atomic: never leaves a half-written ckpt
+            (bar.write if hasattr(bar, "write") else print)(
+                f"  checkpoint saved @ step {step} -> {ckpt_path}")
 
     dt = time.time() - t0
     print(f"\ndone in {dt/60:.1f} min. best val_loss={best_val:.3f} "
