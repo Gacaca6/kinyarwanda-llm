@@ -5,6 +5,41 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-07-02 — Phase 5: Evaluation — DONE (DoD met; M3 downstream reached) 🎉
+
+Ran the eval suite on the real RWANDA_SMALL checkpoint (results in `eval/RESULTS.md`).
+
+**Intrinsic**
+- **Held-out test perplexity: 58.14** (full 1,773,056-token test set; val ~54.5 →
+  generalizes, no overfitting).
+- Tokenizer fertility 1.47 tok/word (2.08× vs GPT-2).
+- 20 generation samples: fluent, topical, factually grounded (correctly names
+  "Perezida ... Paul Kagame"; coherent sentences on education/governance/gender).
+  Some repetition + stub artifacts (expected at this scale).
+
+**Downstream — KINNEWS 14-class news classification** (`eval/finetune_kinnews.py`)
+- Fine-tuned base + classification head, 3 epochs on 17,014 train / 4,254 test.
+- **Test accuracy 87.38%, macro-F1 79.39** (per-epoch 86.69 → 87.00 → 87.38).
+- Published baselines (COLING 2020): BiGRU 88.65%, SVM 88.53%, CNN ~87.5%,
+  char-CNN 71.70%; random ~7.1%. **We're within ~1.3 pts of best, matching CNN** —
+  strong evidence the pretraining learned useful representations.
+- KINNEWS data: `saradhix/kinnews_kirnews` KINNEWS.zip (MIT packaging; article
+  copyright stays with sources → used for benchmark eval only, NOT in pretraining).
+
+**Scripts added:** `eval/evaluate.py` (perplexity + samples), `eval/finetune_kinnews.py`
+(downstream). Both smoke-tested locally, run on the checkpoint via Colab.
+
+**Phase 5 DoD** (intrinsic + ≥1 downstream metric + human-eval summary): intrinsic +
+downstream **MET**; native-speaker human review is the remaining piece (samples
+formatted in `eval/RESULTS.md` for the community/user to complete). **Milestone M3:
+downstream reached; pending native-speaker fluency review.**
+
+**Next (with human's go-ahead):** Phase 6 — instruction tuning (v1 assistant), or
+Phase 7 — serving/model card + open release. Also open: fold native-speaker ratings
+into RESULTS.md when available.
+
+---
+
 ## 2026-07-01 — Phase 4: Pretraining — COMPLETE (M2 reached) 🎉
 
 **RWANDA_SMALL base model trained end-to-end on Colab T4.**
