@@ -5,6 +5,36 @@ every working session with: what was done, what worked, what's next.
 
 ---
 
+## 2026-07-02 — Phase 7: Serving & sharing — demo + model card ready
+
+Built the release artifacts for the v0 base model (release itself awaits the human).
+
+- **`app.py`** — minimal Gradio demo: Kinyarwanda prompt → continuation, with
+  temperature/top-k/length sliders + examples. Runs on CPU. Loads weights from
+  `$KIN_CKPT`. Ready to drop into a Hugging Face Space. Smoke-tested (`complete()` OK).
+- **`MODEL_CARD.md`** — full model card: summary, intended use / out-of-scope,
+  how-to-use, training data + licenses, procedure, evaluation (ppl 58.14, KINNEWS
+  87.38%), limitations, bias/ethics, and a **proposed license** (CC BY-SA 4.0, since
+  Wikipedia's share-alike is the most restrictive input) flagged as a human decision.
+- **`scripts/export_model.py`** — strips optimizer + optional fp16 to make a
+  release-ready weights file (~1.6 GB training ckpt → ~269 MB fp16). Smoke-tested.
+- Added `gradio` to requirements; `release/` gitignored.
+
+**Phase 7 DoD** (runnable demo + model card; release approved by human): demo + card
+**DONE**; the actual open release (final license sign-off, uploading weights to a free
+host e.g. HF, making public) is the human's call — **M5 pending owner approval**.
+
+**Open items for the human**
+- Confirm the weights license (CC BY-SA 4.0 proposed) — ideally a quick legal sanity
+  check given CC BY-SA training data.
+- Pick a host for weights + demo (HF model repo + HF Space is the free default).
+- Native-speaker review of the generation samples (Phase 5 human-eval, still open).
+
+**Remaining roadmap:** Phase 6 (instruction tuning → v1 assistant), Phase 8
+(morphology-aware tokenizer research).
+
+---
+
 ## 2026-07-02 — Phase 5: Evaluation — DONE (DoD met; M3 downstream reached) 🎉
 
 Ran the eval suite on the real RWANDA_SMALL checkpoint (results in `eval/RESULTS.md`).
