@@ -23,7 +23,7 @@ tiktoken>=0.7
 huggingface_hub>=0.23
 
 # Serving demo (Phase 7 — app.py). Only needed to run the Gradio demo.
-gradio>=4.0
+gradio>=5.0
 
 # Numerics, progress bars, dataset access, regex pretokenization.
 numpy>=1.26

@@ -67,7 +67,7 @@ def build_demo():
                      "answer questions. It can be fluent but also repeat or make things "
                      "up — do not rely on it for facts."),
         examples=EXAMPLES,
-        allow_flagging="never",
+        flagging_mode="never",   # gradio >= 5 (was allow_flagging in gradio 4)
     )
 
 
